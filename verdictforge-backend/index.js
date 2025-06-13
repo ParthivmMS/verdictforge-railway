@@ -1,17 +1,15 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import summarizeRoute from './summarize.js';
-
-dotenv.config();
+const express = require('express');
 const app = express();
-app.use(cors());
-app.use(express.json());
+const summarizeRoute = require('./summarize'); // 🔁 Route file
 
-app.post('/summarize', summarizeRoute);
+app.use(express.json()); // ✅ To parse JSON requests
+app.use('/summarize', summarizeRoute); // 🔗 Route path
 
-app.get('/', (req, res) => res.send("✅ VerdictForge backend is working!"));
+app.get('/', (req, res) => {
+  res.send('✅ VerdictForge Backend is live!');
+});
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('✅ Server running...');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
