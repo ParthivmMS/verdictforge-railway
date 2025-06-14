@@ -1,13 +1,21 @@
 {
-  "name": "verdictforge-backend",
+  "name": "verdictforge-frontend",
   "version": "1.0.0",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "start": "node index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "body-parser": "^1.20.2"
+    "next": "13.4.19",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "eslint": "8.55.0",
+    "eslint-config-next": "13.4.19",
+    "typescript": "^5.3.3"
   }
 }
