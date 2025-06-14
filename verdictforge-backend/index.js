@@ -1,15 +1,20 @@
-const express = require('express');
+// index.js
+const express = require("express");
+const summarize = require("./summarize");
+const cors = require("cors");
+
 const app = express();
-const summarizeRoute = require('./summarize'); // 🔁 Route file
+const PORT = process.env.PORT || 8080;
 
-app.use(express.json()); // ✅ To parse JSON requests
-app.use('/summarize', summarizeRoute); // 🔗 Route path
+app.use(cors());
+app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('✅ VerdictForge Backend is live!');
+app.get("/", (req, res) => {
+  res.send("✅ VerdictForge Backend is Running");
 });
 
-const PORT = process.env.PORT || 3000;
+app.post("/summarize", summarize);
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
