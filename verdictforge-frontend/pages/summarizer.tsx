@@ -12,11 +12,10 @@ export default function Summarizer() {
     setLoading(true);
 
     try {
-      const res = await fetch('https://verdictforge-railway-production-b9f4.up.railway.app/summarize', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ text: input }),
-});
+      const res = await fetch('https://verdictforge-railway-production-b9f4.up.railway.app', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: input }),
       });
 
       const data = await res.json();
