@@ -1,16 +1,18 @@
-// File: index.js
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+const fetch = require('node-fetch');
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('🧠 VerdictForge AI Backend is Running');
+  res.send('✅ VerdictForge AI Backend is Running');
 });
 
 app.post('/summarize', async (req, res) => {
@@ -25,41 +27,42 @@ app.post('/summarize', async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.DEEPINFRA_API_KEY}`
+        Authorization: `Bearer ${process.env.DEEPINFRA_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
         messages: [
           {
             role: 'system',
-            content: `You are a legal AI trained to summarize Indian court judgments. Reply ONLY in this format:
+            content: `You are a legal AI trained to summarize Indian court judgments. Reply only with:
 
-Legal Summary: <summary for lawyers>
+Legal Summary: <professional summary>
 
-Plain English Summary: <summary for non-lawyers>
+Plain English Summary: <easy explanation>
 
-No introduction or conclusion. No extra text.`
+Do not include anything else.`,
           },
           {
             role: 'user',
-            content: text
-          }
-        ]
-      })
+            content: text,
+          },
+        ],
+      }),
     });
 
     const result = await response.json();
-    const content = result?.choices?.[0]?.message?.content?.trim() || '';
+    const content = result.choices?.[0]?.message?.content?.trim() || '';
+
+    console.log('[DEBUG] DeepInfra Response:', content);
 
     const match = content.match(/Legal Summary:\s*([\s\S]*?)Plain English Summary:\s*([\s\S]*)/i);
     const legal = match?.[1]?.trim() || '[Could not extract legal summary]';
     const plain = match?.[2]?.trim() || '[Could not extract plain summary]';
 
-    return res.status(200).json({ legal, plain, raw: content });
-
+    res.status(200).json({ legal, plain, raw: content });
   } catch (error) {
-    console.error('❌ API Error:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    console.error('❌ Error summarizing:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 });
 
