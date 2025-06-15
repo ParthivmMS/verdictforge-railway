@@ -1,21 +1,20 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const fetch = require('node-fetch');
-
-dotenv.config();
+const bodyParser = require('body-parser');
+const fetch = require('node-fetch'); // if needed
+require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const port = process.env.PORT || 8080;
 
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
   res.send('✅ VerdictForge AI Backend is Running');
 });
 
-app.post('/summarize', async (req, res) => {
+app.post('/api/summarize', async (req, res) => {
   const { text } = req.body;
 
   if (!text || typeof text !== 'string') {
@@ -26,21 +25,21 @@ app.post('/summarize', async (req, res) => {
     const response = await fetch('https://api.deepinfra.com/v1/text/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${process.env.DEEPINFRA_API_KEY}`,
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.DEEPINFRA_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
         messages: [
           {
             role: 'system',
-            content: `You are a legal AI trained to summarize Indian court judgments. Reply only with:
+            content: `You are a legal AI trained to summarize Indian court judgments. Reply with *only*:
 
-Legal Summary: <professional summary>
+Legal Summary: <your professional summary for lawyers>
 
-Plain English Summary: <easy explanation>
+Plain English Summary: <your simplified summary for non-lawyers>
 
-Do not include anything else.`,
+Do not add anything else.`,
           },
           {
             role: 'user',
@@ -51,13 +50,14 @@ Do not include anything else.`,
     });
 
     const result = await response.json();
-    const content = result.choices?.[0]?.message?.content?.trim() || '';
+    const content = result?.choices?.[0]?.message?.content?.trim() || '';
 
-    console.log('[DEBUG] DeepInfra Response:', content);
+    console.log('[DEBUG] AI Response:', content);
 
-    const match = content.match(/Legal Summary:\s*([\s\S]*?)Plain English Summary:\s*([\s\S]*)/i);
-    const legal = match?.[1]?.trim() || '[Could not extract legal summary]';
-    const plain = match?.[2]?.trim() || '[Could not extract plain summary]';
+    // 🔍 Improved regex match
+    const match = content.match(/Legal Summary:\s*([\s\S]*?)\s*Plain English Summary:\s*([\s\S]*)/i);
+    const legal = match?.[1]?.trim() || content || 'N/A';
+    const plain = match?.[2]?.trim() || 'N/A';
 
     res.status(200).json({ legal, plain, raw: content });
   } catch (error) {
@@ -66,6 +66,6 @@ Do not include anything else.`,
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`🚀 Server running on http://localhost:${port}`);
 });
